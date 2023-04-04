@@ -114,8 +114,15 @@ require('lazy').setup({
   -- Fuzzy Finder Algorithm which requires local dependencies to be built.
   -- Only load if `make` is available. Make sure you have the system
   -- requirements installed.
-  {'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-  ,
+  {
+    'nvim-telescope/telescope-fzf-native.nvim',
+    -- NOTE: If you are having trouble with this installation,
+    --       refer to the README for telescope-fzf-native for more instructions.
+    build = 'make',
+    cond = function()
+      return vim.fn.executable 'make' == 1
+    end,
+  },
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -376,14 +383,8 @@ local servers = {
 
   lua_ls = {
     Lua = {
-      workspace = {
-        checkThirdParty = false,
-        -- library = vim.api.nvim_get_runtime_file('', true)
-      },
+      workspace = { checkThirdParty = false },
       telemetry = { enable = false },
-      diagnostics = {
-        globals = { 'vim' }
-      }
     },
   },
 }
