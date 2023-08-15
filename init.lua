@@ -133,6 +133,7 @@ require('lazy').setup({
       pcall(require('nvim-treesitter.install').update { with_sync = true })
     end,
   },
+  'simrat39/rust-tools.nvim',
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -217,6 +218,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+
+vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -377,7 +380,6 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  rust_analyzer = {},
   tsserver = {},
 
   lua_ls = {
@@ -413,6 +415,9 @@ mason_lspconfig.setup_handlers {
       settings = servers[server_name],
     }
   end,
+  ['rust_analyzer'] = function ()
+    require('rust-tools').setup({})
+  end
 }
 
 -- nvim-cmp setup
