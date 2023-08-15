@@ -59,7 +59,7 @@ require('lazy').setup({
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
+  { 'folke/which-key.nvim',          opts = {} },
   { -- Adds git releated signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
@@ -106,7 +106,7 @@ require('lazy').setup({
   },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',         opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
   { 'nvim-telescope/telescope.nvim', version = '*', dependencies = { 'nvim-lua/plenary.nvim' } },
@@ -415,8 +415,14 @@ mason_lspconfig.setup_handlers {
       settings = servers[server_name],
     }
   end,
-  ['rust_analyzer'] = function ()
-    require('rust-tools').setup({})
+  ['rust_analyzer'] = function()
+    local rt = require('rust-tools')
+    rt.setup({
+      server = {
+        capabilities = capabilities,
+        on_attach = on_attach,
+      }
+    })
   end
 }
 
@@ -467,4 +473,3 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
-
