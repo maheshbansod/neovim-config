@@ -35,6 +35,9 @@ require('lazy').setup({
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
 
+  -- set project specific / global variables
+  'folke/neoconf.nvim',
+
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
   { -- LSP Configuration & Plugins
@@ -98,10 +101,9 @@ require('lazy').setup({
   { -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
+    main = 'ibl',
     -- See `:help indent_blankline.txt`
     opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
     },
   },
 
@@ -133,25 +135,6 @@ require('lazy').setup({
       pcall(require('nvim-treesitter.install').update { with_sync = true })
     end,
   },
-  {
-    'mrcjkb/rustaceanvim',
-    version = '^3',
-    ft = { 'rust' },
-  },
-  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
-  --       These are some example plugins that I've included in the kickstart repository.
-  --       Uncomment any of the lines below to enable them.
-  -- require 'kickstart.plugins.autoformat',
-  -- require 'kickstart.plugins.debug',
-
-  -- NOTE: The import below automatically adds your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    You can use this folder to prevent any conflicts with this init.lua if you're interested in keeping
-  --    up-to-date with whatever is in the kickstart repo.
-  --
-  --    For additional information see: https://github.com/folke/lazy.nvim#-structuring-your-plugins
-  --
-  --    An additional note is that if you only copied in the `init.lua`, you can just comment this line
-  --    to get rid of the warning telling you that there are not plugins in `lua/custom/plugins/`.
   { import = 'custom.plugins' },
 }, {})
 
@@ -225,6 +208,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 vim.cmd [[autocmd BufWritePre * lua vim.lsp.buf.format()]]
 
+-- require ibl
+require('ibl').setup()
+
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 require('telescope').setup {
@@ -262,7 +248,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'help', 'vim' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'help', 'vim', 'vue' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -384,7 +370,18 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  tsserver = {},
+  rust_analyzer = {
+    cargo = {
+      features = { 'ssr' },
+      extraEnv = {
+        ['MY_VARIABLE'] = 'so true'
+      }
+    }
+  },
+  volar = {
+    filetypes = { 'vue', 'typescript', 'javascript' }
+  },
+  -- tsserver = {},
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -394,11 +391,14 @@ local servers = {
 }
 
 -- Setup neovim lua configuration
-require('neodev').setup()
+require('neoconf').setup()
 
 -- nvim-cmp supports additional completion capabilities, so broadcast that to servers
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
+
+-- setup neoconf
+require("neodev").setup({})
 
 -- Setup mason so it can manage external tooling
 require('mason').setup()
@@ -410,20 +410,23 @@ mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
 }
 
-vim.g.rustaceanvim = {
-  -- LSP configuration
-  server = {
-    on_attach = on_attach
-  },
-}
-
+local lspconfig = require('lspconfig')
 mason_lspconfig.setup_handlers {
   function(server_name)
-    require('lspconfig')[server_name].setup {
+    if require("neoconf").get(server_name .. ".disable") then
+      -- disable a server if a config with disable: true exists
+      return
+    end
+    local server_config = {
       capabilities = capabilities,
       on_attach = on_attach,
       settings = servers[server_name],
     }
+    if server_name == 'volar' then
+      -- todo: consider refactoring it so there could be one place where we override filetypes
+      server_config.filetypes = { 'javascript', 'vue', 'typescript' }
+    end
+    lspconfig[server_name].setup(server_config)
   end,
 }
 
