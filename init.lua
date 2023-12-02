@@ -135,6 +135,11 @@ require('lazy').setup({
       pcall(require('nvim-treesitter.install').update { with_sync = true })
     end,
   },
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^3', -- Recommended
+    ft = { 'rust' },
+  },
   { import = 'custom.plugins' },
 }, {})
 
@@ -370,14 +375,6 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  rust_analyzer = {
-    cargo = {
-      features = { 'ssr' },
-      extraEnv = {
-        ['MY_VARIABLE'] = 'so true'
-      }
-    }
-  },
   volar = {
     filetypes = { 'vue', 'typescript', 'javascript' }
   },
@@ -409,7 +406,33 @@ local mason_lspconfig = require 'mason-lspconfig'
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
 }
+vim.g.rustaceanvim = {
+  -- Plugin configuration
+  tools = {
+  },
+  -- LSP configuration
+  server = {
+    settings = {
+      ['rust-analyzer'] = {
+        cargo = { allFeatures = true },
+        checkOnSave = true,
+        check = {
+          enable = true,
+          command = "clippy",
+          features = "all",
+        },
+        procMacro = {
+          enable = true
+        }
 
+      },
+    },
+    on_attach = on_attach,
+  },
+  -- DAP configuration
+  dap = {
+  },
+}
 local lspconfig = require('lspconfig')
 mason_lspconfig.setup_handlers {
   function(server_name)
