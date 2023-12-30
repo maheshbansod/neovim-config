@@ -126,6 +126,8 @@ require('lazy').setup({
     end,
   },
 
+  'IndianBoy42/tree-sitter-just',
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
@@ -372,7 +374,7 @@ end
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
 local servers = {
-  -- clangd = {},
+  clangd = {},
   -- gopls = {},
   -- pyright = {},
   volar = {
@@ -406,6 +408,10 @@ local mason_lspconfig = require 'mason-lspconfig'
 mason_lspconfig.setup {
   ensure_installed = vim.tbl_keys(servers),
 }
+
+-- Use C highlighter for .h files
+vim.g.c_syntax_for_h = 1
+
 vim.g.rustaceanvim = {
   -- Plugin configuration
   tools = {
@@ -452,6 +458,9 @@ mason_lspconfig.setup_handlers {
     lspconfig[server_name].setup(server_config)
   end,
 }
+
+-- nvim treesitter just setup
+require('tree-sitter-just').setup({});
 
 -- nvim-cmp setup
 local cmp = require 'cmp'
