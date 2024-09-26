@@ -130,10 +130,24 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'nvim-treesitter/nvim-treesitter-context'
     },
     config = function()
       pcall(require('nvim-treesitter.install').update { with_sync = true })
     end,
+  },
+  {
+    "kylechui/nvim-surround",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+      })
+    end
+  },
+  {
+    "wellle/targets.vim"
   },
   { import = 'custom.plugins' },
 }, {})
@@ -283,19 +297,19 @@ require('nvim-treesitter.configs').setup {
       set_jumps = true, -- whether to set jumps in the jumplist
       goto_next_start = {
         [']m'] = '@function.outer',
-        [']]'] = '@class.outer',
+        [']]'] = '@parameter.outer',
       },
       goto_next_end = {
         [']M'] = '@function.outer',
-        [']['] = '@class.outer',
+        [']['] = '@parameter.outer',
       },
       goto_previous_start = {
         ['[m'] = '@function.outer',
-        ['[['] = '@class.outer',
+        ['[['] = '@parameter.outer',
       },
       goto_previous_end = {
         ['[M'] = '@function.outer',
-        ['[]'] = '@class.outer',
+        ['[]'] = '@parameter.outer',
       },
     },
     swap = {
