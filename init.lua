@@ -149,6 +149,12 @@ require('lazy').setup({
   {
     "wellle/targets.vim"
   },
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^5', -- Recommended
+    lazy = false,   -- This plugin is already lazy
+  },
+  { 'mfussenegger/nvim-dap' },
   { import = 'custom.plugins' },
 }, {})
 
@@ -262,7 +268,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'help', 'vim', 'vue' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'tsx', 'typescript', 'help', 'vim', 'vue' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -384,14 +390,14 @@ local servers = {
   -- clangd = {},
   -- gopls = {},
   -- pyright = {},
-  rust_analyzer = {
-    cargo = {
-      features = { 'ssr' },
-      extraEnv = {
-        ['MY_VARIABLE'] = 'so true'
-      }
-    }
-  },
+  -- rust_analyzer = {
+  --   cargo = {
+  --     features = { 'ssr' },
+  --     extraEnv = {
+  --       ['MY_VARIABLE'] = 'so true'
+  --     }
+  --   }
+  -- },
   volar = {
     filetypes = { 'vue', 'typescript', 'javascript' }
   },
@@ -442,6 +448,13 @@ mason_lspconfig.setup_handlers {
     end
     lspconfig[server_name].setup(server_config)
   end,
+}
+
+-- rustaceanvim
+vim.g.rustaceanvim = {
+  server = {
+    on_attach = on_attach
+  }
 }
 
 -- nvim-cmp setup
