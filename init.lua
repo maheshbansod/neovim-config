@@ -132,15 +132,130 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'nvim-treesitter/nvim-treesitter-context'
     },
     config = function()
       pcall(require('nvim-treesitter.install').update { with_sync = true })
     end,
   },
   {
+    "kylechui/nvim-surround",
+    version = "*", -- Use for stability; omit to use `main` branch for the latest features
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({
+        -- Configuration here, or leave empty to use defaults
+      })
+    end
+  },
+  {
+    "wellle/targets.vim"
+  },
+  {
     'mrcjkb/rustaceanvim',
-    version = '^3', -- Recommended
-    ft = { 'rust' },
+    version = '^5', -- Recommended
+    lazy = false,   -- This plugin is already lazy
+  },
+  { 'mfussenegger/nvim-dap' },
+  {
+    "jake-stewart/multicursor.nvim",
+    branch = "1.0",
+    config = function()
+      local mc = require("multicursor-nvim")
+
+      mc.setup()
+
+      local set = vim.keymap.set
+
+      -- Add or skip cursor above/below the main cursor.
+      set({ "n", "v" }, "<up>",
+        function() mc.lineAddCursor(-1) end)
+      set({ "n", "v" }, "<down>",
+        function() mc.lineAddCursor(1) end)
+      set({ "n", "v" }, "<leader><up>",
+        function() mc.lineSkipCursor(-1) end)
+      set({ "n", "v" }, "<leader><down>",
+        function() mc.lineSkipCursor(1) end)
+
+      -- Add or skip adding a new cursor by matching word/selection
+      set({ "n", "v" }, "<leader>n",
+        function() mc.matchAddCursor(1) end)
+      set({ "n", "v" }, "<leader>s",
+        function() mc.matchSkipCursor(1) end)
+      set({ "n", "v" }, "<leader>N",
+        function() mc.matchAddCursor(-1) end)
+      set({ "n", "v" }, "<leader>S",
+        function() mc.matchSkipCursor(-1) end)
+
+      -- You can also add cursors with any motion you prefer:
+      -- set("n", "<right>", function()
+      --     mc.addCursor("w")
+      -- end)
+      -- set("n", "<leader><right>", function()
+      --     mc.skipCursor("w")
+      -- end)
+
+      -- Rotate the main cursor.
+      set({ "n", "v" }, "<left>", mc.nextCursor)
+      set({ "n", "v" }, "<right>", mc.prevCursor)
+
+      -- Delete the main cursor.
+      set({ "n", "v" }, "<leader>x", mc.deleteCursor)
+
+      -- Add and remove cursors with control + left click.
+      set("n", "<c-leftmouse>", mc.handleMouse)
+
+      set({ "n", "v" }, "<c-q>", function()
+        if mc.cursorsEnabled() then
+          -- Stop other cursors from moving.
+          -- This allows you to reposition the main cursor.
+          mc.disableCursors()
+        else
+          mc.addCursor()
+        end
+      end)
+
+      -- clone every cursor and disable the originals
+      set({ "n", "v" }, "<leader><c-q>", mc.duplicateCursors)
+
+      set("n", "<esc>", function()
+        if not mc.cursorsEnabled() then
+          mc.enableCursors()
+        elseif mc.hasCursors() then
+          mc.clearCursors()
+        else
+          -- Default <esc> handler.
+        end
+      end)
+
+      -- Align cursor columns.
+      set("v", "<leader>a", mc.alignCursors)
+
+      -- Split visual selections by regex.
+      set("v", "S", mc.splitCursors)
+
+      -- Append/insert for each line of visual selections.
+      set("v", "I", mc.insertVisual)
+      set("v", "A", mc.appendVisual)
+
+      -- match new cursors within visual selections by regex.
+      set("v", "M", mc.matchCursors)
+
+      -- Rotate visual selection contents.
+      set("v", "<leader>t",
+        function() mc.transposeCursors(1) end)
+      set("v", "<leader>T",
+        function() mc.transposeCursors(-1) end)
+
+      -- Customize how cursors look.
+      local hl = vim.api.nvim_set_hl
+      hl(0, "MultiCursorCursor", { link = "Cursor" })
+      hl(0, "MultiCursorVisual", { link = "Visual" })
+      hl(0, "MultiCursorSign", { link = "SignColumn" })
+      hl(0, "MultiCursorDisabledCursor", { link = "Visual" })
+      hl(0, "MultiCursorDisabledVisual", { link = "Visual" })
+      hl(0, "MultiCursorDisabledSign", { link = "SignColumn" })
+    end
   },
   { import = 'custom.plugins' },
 }, {})
@@ -257,7 +372,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'help', 'vim', 'vue' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'tsx', 'typescript', 'vimdoc', 'vim', 'vue' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -292,19 +407,19 @@ require('nvim-treesitter.configs').setup {
       set_jumps = true, -- whether to set jumps in the jumplist
       goto_next_start = {
         [']m'] = '@function.outer',
-        [']]'] = '@class.outer',
+        [']]'] = '@parameter.outer',
       },
       goto_next_end = {
         [']M'] = '@function.outer',
-        [']['] = '@class.outer',
+        [']['] = '@parameter.outer',
       },
       goto_previous_start = {
         ['[m'] = '@function.outer',
-        ['[['] = '@class.outer',
+        ['[['] = '@parameter.outer',
       },
       goto_previous_end = {
         ['[M'] = '@function.outer',
-        ['[]'] = '@class.outer',
+        ['[]'] = '@parameter.outer',
       },
     },
     swap = {
@@ -317,6 +432,21 @@ require('nvim-treesitter.configs').setup {
       },
     },
   },
+}
+
+require 'treesitter-context'.setup {
+  -- enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+  -- max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
+  -- min_window_height = 0, -- Minimum editor window height to enable context. Values <= 0 mean no limit.
+  -- line_numbers = true,
+  multiline_threshold = 1, -- Maximum number of lines to show for a single context
+  -- trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+  -- mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
+  -- -- Separator between context and content. Should be a single character string, like '-'.
+  -- -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
+  -- separator = nil,
+  -- zindex = 20, -- The Z-index of the context window
+  -- on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
 }
 
 -- Diagnostic keymaps
@@ -379,10 +509,19 @@ local servers = {
   clangd = {},
   -- gopls = {},
   -- pyright = {},
-  volar = {
-    filetypes = { 'vue', 'typescript', 'javascript' }
-  },
-  -- tsserver = {},
+  -- rust_analyzer = {
+  --   cargo = {
+  --     features = { 'ssr' },
+  --     extraEnv = {
+  --       ['MY_VARIABLE'] = 'so true'
+  --     }
+  --   }
+  -- },
+  -- volar = {
+  --   filetypes = { 'vue', 'typescript', 'javascript' }
+  -- },
+  ts_ls = {},
+  denols = {},
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -453,16 +592,50 @@ mason_lspconfig.setup_handlers {
       on_attach = on_attach,
       settings = servers[server_name],
     }
-    if server_name == 'volar' then
-      -- todo: consider refactoring it so there could be one place where we override filetypes
-      server_config.filetypes = { 'javascript', 'vue', 'typescript' }
+    -- if server_name == 'volar' then
+    --   -- todo: consider refactoring it so there could be one place where we override filetypes
+    --   server_config.filetypes = { 'javascript', 'vue', 'typescript' }
+    -- end
+    if server_name == 'denols' then
+      server_config.root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc")
+    elseif server_name == 'ts_ls' then
+      server_config.root_dir = lspconfig.util.root_pattern("package.json")
+      server_config.single_file_support = false
     end
+    -- server_config.root_dir = function()
+    --   return "a"
+    -- end
     lspconfig[server_name].setup(server_config)
   end,
 }
 
--- nvim treesitter just setup
-require('tree-sitter-just').setup({});
+-- -- nvim treesitter just setup
+-- require('tree-sitter-just').setup({});
+-- =======
+
+-- for denols
+vim.g.markdown_fenced_languages = {
+  "ts=typescript"
+}
+-- rustaceanvim
+vim.g.rustaceanvim = {
+  server = {
+    on_attach = on_attach,
+    settings = {
+      ['rust-analyzer'] = {
+        diagnostics = {
+          disabled = { "unlinked-file" }
+        },
+        -- cargo = {
+        --   features = { "ts" },
+        --   extraEnv = {
+        --     GOOGLE_API_KEY = "1"
+        --   }
+        -- }
+      }
+    }
+  }
+}
 
 -- nvim-cmp setup
 local cmp = require 'cmp'
@@ -484,15 +657,7 @@ cmp.setup {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
+    -- TODO: maybe remove this shift tab mapping too - or map both of these to something else
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()

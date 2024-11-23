@@ -1,4 +1,3 @@
-
 return {
-	'maheshbansod/copy-with-lines.nvim'
+	'maheshbansod/copy-with-lines.nvim',
 }
