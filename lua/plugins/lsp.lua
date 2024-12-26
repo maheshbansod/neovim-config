@@ -2,6 +2,7 @@ return {
   {
     "neovim/nvim-lspconfig",
     dependencies = {
+      "Saghen/blink.cmp",
       {
         "folke/lazydev.nvim",
         ft = "lua", -- only load on lua files
@@ -15,12 +16,14 @@ return {
       },
     },
     config = function()
-      require("lspconfig").lua_ls.setup {}
+      local capabilities = require("blink.cmp").get_lsp_capabilities()
+      require("lspconfig").lua_ls.setup { capabilities = capabilities }
 
       vim.api.nvim_create_autocmd('LspAttach', {
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if not client then return end
+          ---@diagnostic disable-next-line: missing-parameter, param-type-mismatch
           if client.supports_method('textDocument/formatting') then
             -- Format on save
             vim.api.nvim_create_autocmd('BufWritePre', {

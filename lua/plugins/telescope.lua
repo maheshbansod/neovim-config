@@ -26,6 +26,11 @@ return {
       vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = '[F]ind [b]uffers' })
       vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = '[F]ind [h]elp tags' })
 
+      vim.keymap.set('n', '<leader>en', function()
+        builtin.find_files {
+          cwd = vim.fn.stdpath('config')
+        }
+      end)
       vim.keymap.set('n', '<leader>ep', function()
         builtin.find_files {
           ---@diagnostic disable-next-line
