@@ -20,7 +20,21 @@ return {
       local lspconfig = require("lspconfig")
       lspconfig.lua_ls.setup { capabilities = capabilities }
       lspconfig.rust_analyzer.setup { capabilities = capabilities }
-      lspconfig.pyright.setup { capabilities = capabilities }
+      lspconfig.pyright.setup {
+        settings = {
+          pyright = {
+            disableOrganizeImports = true, -- Using Ruff
+          },
+          python = {
+            analysis = {
+              ignore = { '*' },         -- Using Ruff
+              typeCheckingMode = 'off', -- Using mypy
+            },
+          },
+        },
+        capabilities = capabilities
+      }
+      lspconfig.ruff.setup { capabilities = capabilities }
 
       vim.keymap.set("n", "K", function()
         vim.lsp.buf.hover({ border = "rounded" })
