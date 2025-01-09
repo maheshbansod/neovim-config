@@ -20,6 +20,8 @@ return {
       local lspconfig = require("lspconfig")
       lspconfig.lua_ls.setup { capabilities = capabilities }
       lspconfig.rust_analyzer.setup { capabilities = capabilities }
+      lspconfig.ts_ls.setup { capabilities = capabilities }
+      lspconfig.ocamllsp.setup { capabilities = capabilities }
       lspconfig.pyright.setup {
         settings = {
           pyright = {

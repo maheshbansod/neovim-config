@@ -10,6 +10,7 @@ return {
           return lines[1]
         end
       })
+      vim.keymap.set({ 'n', 'v' }, '<M-k>', require 'ai'.get_ai_suggestion)
     end
   },
   {
