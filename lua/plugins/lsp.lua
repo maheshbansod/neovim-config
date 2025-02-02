@@ -20,6 +20,7 @@ return {
       local lspconfig = require("lspconfig")
       lspconfig.lua_ls.setup { capabilities = capabilities }
       lspconfig.rust_analyzer.setup { capabilities = capabilities }
+      lspconfig.clangd.setup { capabilities = capabilities }
       lspconfig.ts_ls.setup { capabilities = capabilities }
       lspconfig.ocamllsp.setup { capabilities = capabilities }
       lspconfig.pyright.setup {
@@ -37,6 +38,7 @@ return {
         capabilities = capabilities
       }
       lspconfig.ruff.setup { capabilities = capabilities }
+      lspconfig.cssls.setup { capabilities = capabilities }
 
       vim.keymap.set("n", "K", function()
         vim.lsp.buf.hover({ border = "rounded" })
